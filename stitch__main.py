@@ -21,6 +21,6 @@ def parseLocations(locationsFile):
 
 var = parseLocations("locations.txt")
 var.link_nodes()
-print(var)
+# print(var)
 
 import pdb; pdb.set_trace()  # breakpoint 167e6085 //

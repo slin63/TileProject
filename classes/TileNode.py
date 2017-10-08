@@ -2,56 +2,56 @@ from math import fabs
 
 # LinkedList node that contains image data
 class TileNode(object):
-    def __init__(self, file_name, lat, longi, height, left_node=None, right_node=None, below_node=None):
+    def __init__(self, file_name, lat, longi, height, below_node=None, above_node=None, right_node=None):
         self._file_name = file_name
         self._coord = LatLong(lat=lat, longi=longi)
         self._height = height
 
-        self._left = left_node
-        self._right = right_node
         self._below = below_node
+        self._above = above_node
 
-    # Conditions for left node:
-    # other.lat - this.lat < 0
+        self._right = right_node
+
+    # Conditions for below node:
+    # other.lat < this.lat
     # other.lat - this.lat inside spacing_lat
     # other.long within TOLERANCE_LONG
-    def find_left(self, search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG=0.0005):
-        for node in search_nodes:
-
-            diff_lat = node.get_lat() - self.get_lat()
-            diff_long = node.get_long() - self.get_long()
-
-            print("CHECKING: {} vs. {}".format(node, self))
-            passes = diff_lat < 0 and spacing_lat.inside_range(diff_lat) and fabs(diff_long) < TOLERANCE_LONG
-
-            if (passes):
-                search_nodes.remove(node)
-
-                # Assign as our left node
-                self._left = node
-
-                # Send this thing on its quest
-                node.find_left(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
-
-    # Conditions for left node:
-    # other.lat - this.lat > 0
-    # other.lat - this.lat inside spacing_lat
-    # other.long within TOLERANCE_LONG
-    def find_right(self, search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG=0.0005):
+    def find_below(self, search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG=0.0005):
         for node in search_nodes:
             diff_lat = node.get_lat() - self.get_lat()
             diff_long = node.get_long() - self.get_long()
 
-            passes = diff_lat > 0 and spacing_lat.inside_range(diff_lat) and fabs(diff_long) < TOLERANCE_LONG
+            # passes = diff_lat < 0 and spacing_lat.inside_range(diff_lat) and fabs(diff_long) < TOLERANCE_LONG
+            passes = diff_lat < 0 and spacing_lat.inside_range(diff_lat) and fabs(diff_long) < spacing_long.floor
 
             if (passes):
                 search_nodes.remove(node)
 
-                # Assign as our left node
-                self._right = node
+                # Assign as our below node
+                self._below = node
 
                 # Send this thing on its quest
-                node.find_right(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
+                node.find_below(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
+
+    # Conditions for above node:
+    # other.lat > this.lat
+    # other.lat - this.lat inside spacing_lat
+    # other.long within TOLERANCE_LONG
+    def find_above(self, search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG=0.0005):
+        for node in search_nodes:
+            diff_lat = node.get_lat() - self.get_lat()
+            diff_long = node.get_long() - self.get_long()
+
+            passes = diff_lat > 0 and spacing_lat.inside_range(diff_lat) and fabs(diff_long) < spacing_long.floor
+
+            if (passes):
+                search_nodes.remove(node)
+
+                # Assign as our above node
+                self._above = node
+
+                # Send this thing on its quest
+                node.find_above(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
 
     def get_coord(self):
         return self._coord
@@ -62,19 +62,19 @@ class TileNode(object):
     def get_long(self):
         return self._coord._long
 
-    def print_right(self):
+    def print_above(self):
         try:
             print(self)
-            self._right.print_right()
+            self._above.print_above()
         except AttributeError as e:
-            print("No more right branches!")
+            print("No more above branches!")
 
-    def print_left(self):
+    def print_below(self):
         try:
             print(self)
-            self._left.print_left()
+            self._below.print_below()
         except AttributeError as e:
-            print("No more left branches!")
+            print("No more below branches!")
 
     def smaller_lat(self, other):
         return this._lat < other._lat

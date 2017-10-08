@@ -33,14 +33,15 @@ from math import fabs
 from .TileNode import FloorCeiling, TileNode, LatLong
 
 TOLERANCE_LONG = 0.005
-DIFF_TOLERANCE = 0.15
+DIFF_TOLERANCE = 0.40
+
+DEBUG = False
+# DEBUG = True
 
 # Begin with a set of unlinked nodes and link them together to form an image
 class NodeSet(object):
     def __init__(self, node_set=[]):
         self._nodes = node_set
-        # print(self._get_N_node())
-        # print(self._find_long_spacing())
 
     def add_image(self, img):
         self.node_set.append(img)
@@ -50,7 +51,7 @@ class NodeSet(object):
         search_nodes = self._nodes[:] # Copy the original node set
 
         # O(N) -> Current node
-        current_node = self._get_N_node()
+        current_node = self._get_W_node()
 
         # O(N) -> Define average meaningful spacings
         spacing_long = self._find_long_spacing()
@@ -58,50 +59,61 @@ class NodeSet(object):
 
         # While the node set still has unlinked nodes
         while (search_nodes):
+            print("NEW CURRENT_NODE: {0}".format(current_node))
+
             # Remove the current node from the search set
             search_nodes.remove(current_node)
 
-            # Define the node directly below us for the next iteration
-            current_node._below = self._find_node_below(current_node, spacing_lat, spacing_long, search_nodes)
+            # # Define the node directly below us for the next iteration
+            # current_node._right = self._find_node_right(current_node, spacing_lat, spacing_long, search_nodes)
 
             # Recursively search for left and right nodes
             # Remove each found node from search_nodes
-            current_node.find_left(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
-            current_node.find_right(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
-            current_node.print_left()
-            current_node.print_right()
-            import pdb; pdb.set_trace()  # breakpoint b7e4db16 //
+            current_node.find_below(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
+            current_node.find_above(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
+            current_node.print_below()
+            current_node.print_above()
+
+            # Define the node directly below us for the next iteration
+            current_node._right = self._find_node_right(current_node, spacing_lat, spacing_long, search_nodes)
 
             # Move onto the node below this one
-            current_node = current_node._below
+            current_node = current_node._right
+
+            print len(search_nodes)
 
 
-    ## TODO: Not working
-    def _find_node_below(self, current_node, spacing_lat, spacing_long, search_nodes, TOLERANCE_LONG=TOLERANCE_LONG):
-        # Node directly below will have ~same long, ~spacing lat
-        # below_node = None
+    def _find_node_right(self, current_node, spacing_lat, spacing_long, search_nodes):
+        # Node directly to right will have ~spacing_long, ~same lat
 
         for node in search_nodes:
+
             diff_long = fabs(node.get_long() - current_node.get_long())
             diff_lat = fabs(node.get_lat() - current_node.get_lat())
+            if DEBUG:
+                print("COMPARING: {0} -> {1}".format(current_node, node))
+                print("DIFF LONG: {0}, FLOOR: {1}, CEILING: {2}".format(diff_long, spacing_long.floor, spacing_long.ceiling))
+                print("DIFF_LAT: {0}, FLOOR: {1}".format(diff_lat, spacing_lat.floor))
 
-            if (diff_long < spacing_long.floor and spacing_lat.inside_range(diff_lat) ):
 
+            passes = spacing_long.inside_range(diff_long) and diff_lat < spacing_lat.floor
+
+            if (passes):
                 return node
+
 
     # O(N) --> Returns NorthWest most NODE
     #          Starting node for search
-    # Search conditions: # Maximize lat
-    def _get_N_node(self):
-        max_lat = self._nodes[0].get_lat()
+    # Search conditions: # Minimize long
+    def _get_W_node(self):
+        min_long = self._nodes[0].get_long()
 
         for img_data in self._nodes:
-            if (img_data.get_lat() > max_lat):
-                max_lat = img_data.get_lat()
+            if (img_data.get_long() < min_long):
+                min_long = img_data.get_long()
 
-        import pdb; pdb.set_trace()  # breakpoint f29833d0 //
 
-        return self._find_node_by_lat(max_lat)
+        return self.find_node_by_long(min_long)
         # return LatLong(max_lat, min_long)
 
     def _find_long_spacing(self, DIFF_TOLERANCE=DIFF_TOLERANCE):
@@ -125,7 +137,7 @@ class NodeSet(object):
         diff_ceiling = long_diff_max + (long_diff_max * DIFF_TOLERANCE)
         diff_floor = long_diff_max - (long_diff_max * DIFF_TOLERANCE)
 
-        return FloorCeiling(diff_ceiling, diff_floor)
+        return FloorCeiling(diff_floor, diff_ceiling)
 
     def _find_lat_spacing(self, DIFF_TOLERANCE=DIFF_TOLERANCE):
         # Find maximum distance between lat rows.
@@ -142,8 +154,6 @@ class NodeSet(object):
 
             lat_diff = fabs(lat_next - lat_this)
 
-            # print(lat_diff)
-
             if lat_diff > lat_diff_max:
                 lat_diff_max = lat_diff
 
@@ -152,9 +162,9 @@ class NodeSet(object):
 
         return FloorCeiling(diff_floor, diff_ceiling)
 
-    def _find_node_by_lat(self, lat):
+    def find_node_by_long(self, longi):
         for node in self._nodes:
-            if (lat == node.get_lat()):
+            if (longi == node.get_long()):
                 return node
 
     def _is_corner(self, current, next):
