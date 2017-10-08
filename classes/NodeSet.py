@@ -36,8 +36,8 @@ from .TileNode import FloorCeiling, TileNode, LatLong
 
 DIFF_TOLERANCE = 0.40
 
-# DEBUG = False
-DEBUG = True
+DEBUG = False
+# DEBUG = True
 
 
 # Begin with a set of unlinked nodes and link them together to form an image
