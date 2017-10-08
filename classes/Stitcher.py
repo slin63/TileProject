@@ -35,7 +35,10 @@ class Stitcher(object):
         # Concatenate below nodes
         # After above/below accounted for, save matrix and
         # change current node to right node.
-        while (stitch_nodes):
+        while (stitch_nodes and current_node is not None):
+            if DEBUG:
+                print("stitch_images")
+
             stitch_nodes.remove(current_node)
 
             # Our initial image tile
@@ -66,13 +69,16 @@ class Stitcher(object):
         out_name = 'stitched-{0}.png'.format(datetime.now())
         out_dir = "{0}/{1}".format(self._out_dir, out_name)
 
+        if self._verbose:
+            print("Exporting image to: {0}".format(out_dir))
+
         cv2.imwrite(out_dir, self._stitched_image)
 
     # Combine each image in image_cols adjacently to form the final tiled image
     def _merge_cols(self, image_cols):
         # Stats data
         num_cols = len(image_cols)
-        col_count = 1
+        col_count = 2
 
         # Identify left-most image column
         stitched = image_cols[0]
@@ -84,6 +90,9 @@ class Stitcher(object):
             h1, w1 = stitched.shape[:2]
             h2, w2 = col.shape[:2]
 
+            if self._verbose:
+                print("Merging images: [{0}/{1}]".format(col_count, num_cols))
+
             # Create empty matrix
             stitched_img = np.zeros((max(h1, h2), w1 + w2, 3), np.uint8)
 
@@ -94,6 +103,9 @@ class Stitcher(object):
             # Set the newly stitched image as the new base for the next iteration
             stitched = stitched_img
 
+            # Increment col counter
+            col_count += 1
+
         return stitched
 
 
@@ -102,7 +114,11 @@ class Stitcher(object):
         if DEBUG:
             print("_stitch_above")
         node_above = root_node.get_above()
-        tile_above = self._image_dict[root_node.get_above()]
+
+        if node_above is not None:
+            tile_above = self._image_dict[node_above.get_name()]
+        else:
+            return tile_current
 
         # While we still have something after this
         while (tile_above is not None):
@@ -119,7 +135,7 @@ class Stitcher(object):
             stitched_img = np.zeros((h1 + h2, max(w1, w2), 3), np.uint8)
 
             # Combine 2 images -> next tile is attached above current tile
-            stitched_img[:h2, :w2, :3] = tile_below
+            stitched_img[:h2, :w2, :3] = tile_above
             stitched_img[h2:h1+h2, :w1, :3] = tile_current
 
             # Set the current tile to the stitched image so far
@@ -144,7 +160,11 @@ class Stitcher(object):
         if DEBUG:
             print("_stitch_below")
         node_below = root_node.get_below()
-        tile_below = self._image_dict[root_node.get_below().get_name()]
+
+        if node_below is not None:
+            tile_below = self._image_dict[node_below.get_name()]
+        else:
+            return tile_current
 
         # While we still have something after this
         while (tile_below is not None):

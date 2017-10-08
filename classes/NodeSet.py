@@ -29,14 +29,15 @@
 # Assumptions:
 # - Photos are evenly spaced
 # - Photos always form a complete rectangular grid.
+# - No redundant photos are taken (photos of the same space)
 
 from math import fabs
 from .TileNode import FloorCeiling, TileNode, LatLong
 
 DIFF_TOLERANCE = 0.40
 
-DEBUG = False
-# DEBUG = True
+# DEBUG = False
+DEBUG = True
 
 
 # Begin with a set of unlinked nodes and link them together to form an image
@@ -72,9 +73,6 @@ class NodeSet(object):
             # Remove the current node from the search set
             search_nodes.remove(current_node)
 
-            # # Define the node directly below us for the next iteration
-            # current_node._right = self._find_node_right(current_node, spacing_lat, spacing_long, search_nodes)
-
             # Recursively search for left and right nodes
             # Remove each found node from search_nodes
             current_node.find_below(search_nodes, spacing_long, spacing_lat)
@@ -85,8 +83,11 @@ class NodeSet(object):
             # Define the node directly below us for the next iteration
             current_node._right = self._find_node_right(current_node, spacing_lat, spacing_long, search_nodes)
 
-            # Move onto the node below this one
-            current_node = current_node._right
+            if current_node._right is not None:
+                # Move onto the node below this one
+                current_node = current_node._right
+            else:
+                search_nodes = []
 
             print(len(search_nodes))
 
