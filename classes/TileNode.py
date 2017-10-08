@@ -12,6 +12,18 @@ class TileNode(object):
 
         self._right = right_node
 
+    def get_name(self):
+        return self._file_name
+
+    def get_above(self):
+        return self._above
+
+    def get_below(self):
+        return self._below
+
+    def get_right(self):
+        return self._right
+
     # Conditions for below node:
     # other.lat < this.lat
     # other.lat - this.lat inside spacing_lat

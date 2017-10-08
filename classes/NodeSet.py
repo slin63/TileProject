@@ -43,16 +43,23 @@ DEBUG = False
 class NodeSet(object):
     def __init__(self, node_set=[]):
         self._nodes = node_set
+        self._start_node = self._get_W_node()
 
     def add_image(self, img):
         self.node_set.append(img)
+
+    def get_root(self):
+        return self._start_node
+
+    def get_nodes(self):
+        return self._nodes
 
     def link_nodes(self):
         # O(N) -> Copy original node list
         search_nodes = self._nodes[:] # Copy the original node set
 
         # O(N) -> Current node
-        current_node = self._get_W_node()
+        current_node = self._start_node
 
         # O(N) -> Define average meaningful spacings
         spacing_long = self._find_long_spacing()
@@ -70,8 +77,8 @@ class NodeSet(object):
 
             # Recursively search for left and right nodes
             # Remove each found node from search_nodes
-            current_node.find_below(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
-            current_node.find_above(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
+            current_node.find_below(search_nodes, spacing_long, spacing_lat)
+            current_node.find_above(search_nodes, spacing_long, spacing_lat)
             current_node.print_below()
             current_node.print_above()
 
@@ -81,7 +88,7 @@ class NodeSet(object):
             # Move onto the node below this one
             current_node = current_node._right
 
-            print len(search_nodes)
+            print(len(search_nodes))
 
     def _find_node_right(self, current_node, spacing_lat, spacing_long, search_nodes):
         # Node directly to right will have ~spacing_long, ~same lat
