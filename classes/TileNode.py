@@ -15,13 +15,12 @@ class TileNode(object):
     # Conditions for below node:
     # other.lat < this.lat
     # other.lat - this.lat inside spacing_lat
-    # other.long within TOLERANCE_LONG
-    def find_below(self, search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG=0.0005):
+    # other.long LESS THAN LONG_SPACE.FLOOR
+    def find_below(self, search_nodes, spacing_long, spacing_lat):
         for node in search_nodes:
             diff_lat = node.get_lat() - self.get_lat()
             diff_long = node.get_long() - self.get_long()
 
-            # passes = diff_lat < 0 and spacing_lat.inside_range(diff_lat) and fabs(diff_long) < TOLERANCE_LONG
             passes = diff_lat < 0 and spacing_lat.inside_range(diff_lat) and fabs(diff_long) < spacing_long.floor
 
             if (passes):
@@ -31,13 +30,13 @@ class TileNode(object):
                 self._below = node
 
                 # Send this thing on its quest
-                node.find_below(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
+                node.find_below(search_nodes, spacing_long, spacing_lat)
 
     # Conditions for above node:
     # other.lat > this.lat
     # other.lat - this.lat inside spacing_lat
-    # other.long within TOLERANCE_LONG
-    def find_above(self, search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG=0.0005):
+    # other.long LESS THan LONG_SPACE.FLOOR
+    def find_above(self, search_nodes, spacing_long, spacing_lat):
         for node in search_nodes:
             diff_lat = node.get_lat() - self.get_lat()
             diff_long = node.get_long() - self.get_long()
@@ -51,7 +50,7 @@ class TileNode(object):
                 self._above = node
 
                 # Send this thing on its quest
-                node.find_above(search_nodes, spacing_long, spacing_lat, TOLERANCE_LONG)
+                node.find_above(search_nodes, spacing_long, spacing_lat)
 
     def get_coord(self):
         return self._coord

@@ -19,12 +19,13 @@
 
 # Recursive approach using linkedLists with leftmost as HEAD:
     # Input: all images.
-    # Image A = image in top right corner (MAX Lat, MIN long)
-    # Image C = image below image A. Used as base point for next iteration
+    # Image A = right-most image (min(long))
+    # Image C = image right of image A. Used as base point for next iteration
     # While VALID
-        # Image B = "same" long, but with smallest diff latitude
-        # Once there is no NEXT smallest diff lattitude with same long
-        # Repeat WHILE with image C
+        # 1 Recursively search each node for above and below neighbors.
+        # 2 Set right neighbor as current node.
+        # GOTO 1
+
 # Assumptions:
 # - Photos are evenly spaced
 # - Photos always form a complete rectangular grid.
@@ -32,11 +33,11 @@
 from math import fabs
 from .TileNode import FloorCeiling, TileNode, LatLong
 
-TOLERANCE_LONG = 0.005
 DIFF_TOLERANCE = 0.40
 
 DEBUG = False
 # DEBUG = True
+
 
 # Begin with a set of unlinked nodes and link them together to form an image
 class NodeSet(object):
@@ -82,7 +83,6 @@ class NodeSet(object):
 
             print len(search_nodes)
 
-
     def _find_node_right(self, current_node, spacing_lat, spacing_long, search_nodes):
         # Node directly to right will have ~spacing_long, ~same lat
 
@@ -100,7 +100,6 @@ class NodeSet(object):
 
             if (passes):
                 return node
-
 
     # O(N) --> Returns NorthWest most NODE
     #          Starting node for search
@@ -129,7 +128,6 @@ class NodeSet(object):
             long_next = self._nodes[index + 1].get_long()
 
             long_diff = fabs(long_next - long_this)
-
 
             if long_diff > long_diff_max:
                 long_diff_max = long_diff

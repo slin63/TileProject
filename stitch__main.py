@@ -21,6 +21,8 @@ def parseLocations(locationsFile):
 
 var = parseLocations("locations.txt")
 var.link_nodes()
-# print(var)
+
+## TODO: Traverse nodes into 2d numpy array.
+##     : Generate map with OpenCV
 
 import pdb; pdb.set_trace()  # breakpoint 167e6085 //
