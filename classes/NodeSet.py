@@ -22,6 +22,8 @@
     # Image A = right-most image (min(long))
     # Image C = image right of image A. Used as base point for next iteration
     # While VALID
+
+
         # 1 Recursively search each node for above and below neighbors.
         # 2 Set right neighbor as current node.
         # GOTO 1
@@ -44,13 +46,13 @@ DEBUG = False
 class NodeSet(object):
     def __init__(self, node_set=[]):
         self._nodes = node_set
-        self._start_node = self._get_W_node()
+        self._root_node = self._get_W_node()
 
     def add_image(self, img):
         self.node_set.append(img)
 
     def get_root(self):
-        return self._start_node
+        return self._root_node
 
     def get_nodes(self):
         return self._nodes
@@ -60,7 +62,7 @@ class NodeSet(object):
         search_nodes = self._nodes[:] # Copy the original node set
 
         # O(N) -> Current node
-        current_node = self._start_node
+        current_node = self._root_node
 
         # O(N) -> Define average meaningful spacings
         spacing_long = self._find_long_spacing()
@@ -93,7 +95,6 @@ class NodeSet(object):
 
     def _find_node_right(self, current_node, spacing_lat, spacing_long, search_nodes):
         # Node directly to right will have ~spacing_long, ~same lat
-
         for node in search_nodes:
 
             diff_long = fabs(node.get_long() - current_node.get_long())

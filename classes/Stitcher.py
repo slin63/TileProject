@@ -1,7 +1,8 @@
-import numpy as np
 from datetime import datetime
 from os import listdir
+
 import cv2
+import numpy as np
 
 # DEBUG = True
 DEBUG = False
